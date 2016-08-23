@@ -281,7 +281,182 @@ Qed.
 Print not_False.
 Theorem excluded_middle_irrefutable:
   forall (P : Prop),
-    ~~(P \/ ~P).
-  intros P.
+   ~~(P \/ (~P)).
+  intros p.
   unfold not.
-  apply not_False with (P \/ (P -> False) -> False).
+  intros h.
+  apply h.
+  right.
+  intros p1.
+  apply h.
+  left.
+  apply p1.
+Qed.
+
+Print excluded_middle_irrefutable.
+
+
+
+Theorem peirce_classic :
+  peirce -> classic.
+  unfold peirce.
+  unfold classic.
+  intros h.
+  unfold not.
+  intros P.
+  assert (((P -> False) -> P) -> P) as H.
+  apply h.
+  intros h1.
+  apply H.
+  intro h2.
+  apply h1 in h2.
+  inversion h2.
+Qed.
+
+Definition excluded_middle :=
+  forall (P : Prop),
+    P \/ ~P.
+
+Theorem classic_excluded_middle :
+  classic -> excluded_middle.
+  unfold classic.
+  unfold excluded_middle.
+  intros H.
+  intros P.
+  assert (~~(P\/~P)) as h.
+  apply excluded_middle_irrefutable.
+  apply H in h.
+  apply h.
+Qed.
+
+Definition de_morgan_not_and_not :=
+  forall (P Q :Prop),
+    ~(~P /\ ~Q) -> P\/Q.
+(*
+Theorem excluded_middle_de_morgan_not_and_not :
+  classic -> de_morgan_not_and_not.
+  unfold de_morgan_not_and_not.
+  unfold classic.
+  unfold not.
+  intros h.
+  intros p q.
+  intros h1.
+  apply h.
+  intros h2.
+  apply h1.
+  apply conj.
+  intros p1.
+  apply h2.
+  left.
+  apply p1.
+  intros q1.
+  apply h2.
+  right.
+  apply q1.
+Qed.
+*)
+Theorem excluded_middle_classic :
+  excluded_middle -> classic.
+  unfold excluded_middle.
+  unfold classic.
+  unfold not.
+  intros h1.
+  intros p.
+  intros h.
+  assert (p \/ (p -> False)) as H.
+  apply h1.
+  destruct H.
+  apply H.
+  apply h in H.
+  inversion H.
+Qed.
+
+Theorem excluded_middle_de_morgan_not_and_not :
+  excluded_middle -> de_morgan_not_and_not.
+  unfold excluded_middle.
+  unfold de_morgan_not_and_not.
+  unfold not.
+  intros h.
+  intros p q.
+  intro h1.
+  assert (p \/ ( p -> False)) as H.
+  apply h.
+  destruct H.
+  left.
+  apply H.
+  assert (q \/ (q -> False)) as H2.
+  apply h.
+  destruct H2.
+  right.
+  apply H0.
+  assert ((p -> False) /\ (q -> False)) as H3.
+  apply conj.
+  apply H.
+  apply H0.
+  apply h1 in H3.
+  inversion H3.
+Qed.
+
+Definition implies_to_or :=
+  forall p q:Prop,
+    (p -> q) -> (~p\/q).
+
+Theorem de_morgan_not_and_not_implies_to_or:
+  de_morgan_not_and_not -> implies_to_or.
+  unfold de_morgan_not_and_not.
+  unfold implies_to_or.
+  unfold not.
+  intros H.
+  intros p q.
+  intros h1.
+  apply H.
+  intros h2.
+  destruct h2.
+  apply H0.
+  intros p'.
+  apply H1.
+  apply h1.
+  apply p'.
+Qed.
+
+Theorem implies_to_or_peirce :
+  implies_to_or -> peirce.
+  unfold implies_to_or.
+  unfold peirce.
+  unfold not.
+  intros H.
+  intros p q.
+  intros h.
+  assert ((p -> p) -> (p -> False) \/ p) as h1.
+  apply H.
+  assert ( p->p) as h2.
+  intros p'.
+  apply p'.
+  apply h1 in h2.
+  destruct h2.
+  apply h.
+  intros p'.
+  apply H0 in p'.
+  inversion p'.
+  apply H0.
+Qed.
+
+(* Please all use excluded_middle *)
+
+
+Notation "x <> y" := (~ (x = y)) : type_scope.
+
+Theorem not_false_then_true :
+  forall (b : bool),
+    b <> false -> b = true.
+
+  intros b.
+  intros h.
+  destruct b.
+  reflexivity.
+  unfold not in h.
+  assert (false = false) as h'.
+  reflexivity.
+  apply h in h'.
+  inversion h'.
+Qed.
