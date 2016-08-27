@@ -1,35 +1,34 @@
 (** * Rel: Properties of Relations *)
 
-(** This short (and optional) chapter develops some basic definitions
-    and a few theorems about binary relations in Coq.  The key
-    definitions are repeated where they are actually used (in the
-    [Smallstep] chapter), so readers who are already comfortable with
-    these ideas can safely skim or skip this chapter.  However,
-    relations are also a good source of exercises for developing
-    facility with Coq's basic reasoning facilities, so it may be
-    useful to look at this material just after the [IndProp]
-    chapter. *)
+Require Export SfLib.
 
-Require Export IndProp.
+(** This short, optional chapter develops some basic definitions and a
+    few theorems about binary relations in Coq.  The key definitions
+    are repeated where they are actually used (in the [Smallstep]
+    chapter), so readers who are already comfortable with these ideas
+    can safely skim or skip this chapter.  However, relations are also
+    a good source of exercises for developing facility with Coq's
+    basic reasoning facilities, so it may be useful to look at it just
+    after the [Logic] chapter. *)
 
-(** A binary _relation_ on a set [X] is a family of propositions
+(** A (binary) _relation_ on a set [X] is a family of propositions
     parameterized by two elements of [X] -- i.e., a proposition about
     pairs of elements of [X].  *)
 
 Definition relation (X: Type) := X -> X -> Prop.
 
-(** Confusingly, the Coq standard library hijacks the generic term
-    "relation" for this specific instance of the idea. To maintain
+(** Somewhat confusingly, the Coq standard library hijacks the generic
+    term "relation" for this specific instance. To maintain
     consistency with the library, we will do the same.  So, henceforth
     the Coq identifier [relation] will always refer to a binary
-    relation between some set and itself, whereas the English word
+    relation between some set and itself, while the English word
     "relation" can refer either to the specific Coq concept or the
     more general concept of a relation between any number of possibly
     different sets.  The context of the discussion should always make
     clear which is meant. *)
 
-(** An example relation on [nat] is [le], the less-than-or-equal-to
-    relation, which we usually write [n1 <= n2]. *)
+(** An example relation on [nat] is [le], the less-that-or-equal-to
+    relation which we usually write like this [n1 <= n2]. *)
 
 Print le.
 (* ====> Inductive le (n : nat) : nat -> Prop :=
@@ -37,26 +36,20 @@ Print le.
            | le_S : forall m : nat, n <= m -> n <= S m *)
 Check le : nat -> nat -> Prop.
 Check le : relation nat.
-(** (Why did we write it this way instead of starting with [Inductive
-    le : relation nat...]?  Because we wanted to put the first [nat]
-    to the left of the [:], which makes Coq generate a somewhat nicer
-    induction principle for reasoning about [<=].) *)
 
 (* ######################################################### *)
-(** * Basic Properties *)
+(** * Basic Properties of Relations *)
 
 (** As anyone knows who has taken an undergraduate discrete math
-    course, there is a lot to be said about relations in general,
-    including ways of classifying relations (as reflexive, transitive,
-    etc.), theorems that can be proved generically about certain sorts
-    of relations, constructions that build one relation from another,
+    course, there is a lot to be said about relations in general --
+    ways of classifying relations (are they reflexive, transitive,
+    etc.), theorems that can be proved generically about classes of
+    relations, constructions that build one relation from another,
     etc.  For example... *)
 
-(** *** Partial Functions *)
-
 (** A relation [R] on a set [X] is a _partial function_ if, for every
-    [x], there is at most one [y] such that [R x y] -- i.e., [R x y1]
-    and [R x y2] together imply [y1 = y2]. *)
+    [x], there is at most one [y] such that [R x y] -- i.e., if [R x
+    y1] and [R x y2] together imply [y1 = y2]. *)
 
 Definition partial_function {X: Type} (R: relation X) :=
   forall x y1 y2 : X, R x y1 -> R x y2 -> y1 = y2.
@@ -77,37 +70,50 @@ Proof.
   inversion H1. inversion H2.
   reflexivity.  Qed.
 
-(** However, the [<=] relation on numbers is not a partial
-    function.  (Assume, for a contradiction, that [<=] is a partial
+(** However, the [<=] relation on numbers is not a partial function.
+    In short: Assume, for a contradiction, that [<=] is a partial
     function.  But then, since [0 <= 0] and [0 <= 1], it follows that
     [0 = 1].  This is nonsense, so our assumption was
-    contradictory.) *)
+    contradictory. *)
 
 Theorem le_not_a_partial_function :
   ~ (partial_function le).
 Proof.
   unfold not. unfold partial_function. intros Hc.
-  assert (0 = 1) as Nonsense. { 
-    apply Hc with (x := 0).
-    - apply le_n.
-    - apply le_S. apply le_n. }
+  assert (0 = 1) as Nonsense.
+   Case "Proof of assertion".
+   apply Hc with (x := 0).
+     apply le_n.
+     apply le_S. apply le_n.
   inversion Nonsense.   Qed.
 
 (** **** Exercise: 2 stars, optional  *)
 (** Show that the [total_relation] defined in earlier is not a partial
     function. *)
 
-(* FILL IN HERE *)
+Print total_relation.
+Theorem total_relation_not_a_partial_function :
+  ~ (partial_function total_relation).
+Proof.
+  unfold not. unfold partial_function. intros.
+  assert (0 = 1) as Nonsense.
+  apply H with 0. apply tot. apply tot.
+  inversion Nonsense.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, optional  *)
-(** Show that the [empty_relation] that we defined earlier is a
-    partial function. *)
+(** Show that the [empty_relation] defined earlier is a partial
+    function. *)
 
-(* FILL IN HERE *)
+Print empty_relation.
+Theorem empty_relation_is_a_partial_function :
+  partial_function empty_relation.
+Proof.
+  unfold partial_function. intros.
+  inversion H.
+Qed.
 (** [] *)
-
-(** *** Reflexive Relations *)
 
 (** A _reflexive_ relation on a set [X] is one for which every element
     of [X] is related to itself. *)
@@ -120,8 +126,6 @@ Theorem le_reflexive :
 Proof.
   unfold reflexive. intros n. apply le_n.  Qed.
 
-(** *** Transitive Relations *)
-
 (** A relation [R] is _transitive_ if [R a c] holds whenever [R a b]
     and [R b c] do. *)
 
@@ -133,8 +137,8 @@ Theorem le_trans :
 Proof.
   intros n m o Hnm Hmo.
   induction Hmo.
-  - (* le_n *) apply Hnm.
-  - (* le_S *) apply le_S. apply IHHmo.  Qed.
+  Case "le_n". apply Hnm.
+  Case "le_S". apply le_S. apply IHHmo.  Qed.
 
 Theorem lt_trans:
   transitive lt.
@@ -148,7 +152,7 @@ Proof.
 
 (** **** Exercise: 2 stars, optional  *)
 (** We can also prove [lt_trans] more laboriously by induction,
-    without using [le_trans].  Do this.*)
+    without using le_trans.  Do this.*)
 
 Theorem lt_trans' :
   transitive lt.
@@ -157,7 +161,8 @@ Proof.
   unfold lt. unfold transitive.
   intros n m o Hnm Hmo.
   induction Hmo as [| m' Hm'o].
-    (* FILL IN HERE *) Admitted.
+  apply le_S. apply Hnm. apply le_S. apply IHHm'o.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, optional  *)
@@ -169,7 +174,9 @@ Proof.
   unfold lt. unfold transitive.
   intros n m o Hnm Hmo.
   induction o as [| o'].
-  (* FILL IN HERE *) Admitted.
+  inversion Hmo. apply le_S. inversion Hmo. rewrite <- H0.
+  apply Hnm. apply IHo'. apply H0.
+Qed.
 (** [] *)
 
 (** The transitivity of [le], in turn, can be used to prove some facts
@@ -179,27 +186,29 @@ Proof.
 Theorem le_Sn_le : forall n m, S n <= m -> n <= m.
 Proof.
   intros n m H. apply le_trans with (S n).
-  - apply le_S. apply le_n.
-  - apply H.
-Qed.
+    apply le_S. apply le_n.
+    apply H.  Qed.
 
 (** **** Exercise: 1 star, optional  *)
 Theorem le_S_n : forall n m,
   (S n <= S m) -> (n <= m).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros. inversion H. reflexivity.
+  apply le_trans with (S n). apply le_S. apply le_n.
+  apply H1.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, optional (le_Sn_n_inf)  *)
 (** Provide an informal proof of the following theorem:
 
-    Theorem: For every [n], [~ (S n <= n)]
+    Theorem: For every [n], [~(S n <= n)]
 
     A formal proof of this is an optional exercise below, but try
-    writing an informal proof without doing the formal proof first.
+    the informal proof without doing the formal proof first.
 
     Proof:
-    (* FILL IN HERE *)
+    ...
     []
  *)
 
@@ -207,16 +216,18 @@ Proof.
 Theorem le_Sn_n : forall n,
   ~ (S n <= n).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  unfold not. intros.
+  induction n. inversion H. apply IHn.
+  inversion H. apply H. apply le_trans with (S (S n)).
+  apply le_S. apply le_n. apply H1.
+Qed.
 (** [] *)
 
 (** Reflexivity and transitivity are the main concepts we'll need for
     later chapters, but, for a bit of additional practice working with
-    relations in Coq, let's look at a few other common ones... *)
+    relations in Coq, here are a few more common ones.
 
-(** *** Symmetric and Antisymmetric Relations *)
-
-(** A relation [R] is _symmetric_ if [R a b] implies [R b a]. *)
+   A relation [R] is _symmetric_ if [R a b] implies [R b a]. *)
 
 Definition symmetric {X: Type} (R: relation X) :=
   forall a b : X, (R a b) -> (R b a).
@@ -225,7 +236,12 @@ Definition symmetric {X: Type} (R: relation X) :=
 Theorem le_not_symmetric :
   ~ (symmetric le).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  unfold not. unfold symmetric.
+  intros.
+  assert (1 <= 0).
+  apply H. apply le_S. apply le_n.
+  inversion H0.
+Qed.
 (** [] *)
 
 (** A relation [R] is _antisymmetric_ if [R a b] and [R b a] together
@@ -239,7 +255,12 @@ Definition antisymmetric {X: Type} (R: relation X) :=
 Theorem le_antisymmetric :
   antisymmetric le.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  unfold antisymmetric.
+  intros a. induction a.
+  intros. inversion H. reflexivity. rewrite <- H2 in H0. inversion H0.
+  intros. destruct b. inversion H. apply f_equal.
+  apply IHa. apply le_S_n. apply H. apply le_S_n. apply H0.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, optional  *)
@@ -248,18 +269,18 @@ Theorem le_step : forall n m p,
   m <= S p ->
   n <= p.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  unfold lt.
+  intros.
+  apply le_S_n. apply le_trans with m.
+  apply H. apply H0.
+Qed.
 (** [] *)
-
-(** *** Equivalence Relations *)
 
 (** A relation is an _equivalence_ if it's reflexive, symmetric, and
     transitive.  *)
 
 Definition equivalence {X:Type} (R: relation X) :=
   (reflexive R) /\ (symmetric R) /\ (transitive R).
-
-(** *** Partial Orders and Preorders *)
 
 (** A relation is a _partial order_ when it's reflexive,
     _anti_-symmetric, and transitive.  In the Coq standard library
@@ -278,10 +299,10 @@ Theorem le_order :
   order le.
 Proof.
   unfold order. split.
-    - (* refl *) apply le_reflexive.
-    - split.
-      + (* antisym *) apply le_antisymmetric.
-      + (* transitive. *) apply le_trans.  Qed.
+    Case "refl". apply le_reflexive.
+    split.
+      Case "antisym". apply le_antisymmetric.
+      Case "transitive.". apply le_trans.  Qed.
 
 (* ########################################################### *)
 (** * Reflexive, Transitive Closure *)
@@ -306,36 +327,53 @@ Theorem next_nat_closure_is_le : forall n m,
   (n <= m) <-> ((clos_refl_trans next_nat) n m).
 Proof.
   intros n m. split.
-  - (* -> *)
-    intro H. induction H.
-    + (* le_n *) apply rt_refl.
-    + (* le_S *)
-      apply rt_trans with m. apply IHle. apply rt_step.
-      apply nn.
-  - (* <- *)
-    intro H. induction H.
-    + (* rt_step *) inversion H. apply le_S. apply le_n.
-    + (* rt_refl *) apply le_n.
-    + (* rt_trans *)
-      apply le_trans with y.
-      apply IHclos_refl_trans1.
-      apply IHclos_refl_trans2. Qed.
+    Case "->".
+      intro H. induction H.
+      SCase "le_n". apply rt_refl.
+      SCase "le_S".
+        apply rt_trans with m. apply IHle. apply rt_step. apply nn.
+    Case "<-".
+      intro H. induction H.
+      SCase "rt_step". inversion H. apply le_S. apply le_n.
+      SCase "rt_refl". apply le_n.
+      SCase "rt_trans".
+        apply le_trans with y.
+        apply IHclos_refl_trans1.
+        apply IHclos_refl_trans2. Qed.
 
-(** The above definition of reflexive, transitive closure is natural:
-    it says, explicitly, that the reflexive and transitive closure of
-    [R] is the least relation that includes [R] and that is closed
-    under rules of reflexivity and transitivity.  But it turns out
-    that this definition is not very convenient for doing proofs,
-    since the "nondeterminism" of the [rt_trans] rule can sometimes
-    lead to tricky inductions.  Here is a more useful definition: *)
+(** The above definition of reflexive, transitive closure is
+    natural -- it says, explicitly, that the reflexive and transitive
+    closure of [R] is the least relation that includes [R] and that is
+    closed under rules of reflexivity and transitivity.  But it turns
+    out that this definition is not very convenient for doing
+    proofs -- the "nondeterminism" of the [rt_trans] rule can sometimes
+    lead to tricky inductions.
 
-Inductive clos_refl_trans_1n {A : Type}
-                             (R : relation A) (x : A)
-                             : A -> Prop :=
-  | rt1n_refl : clos_refl_trans_1n R x x
-  | rt1n_trans (y z : A) :
-      R x y -> clos_refl_trans_1n R y z ->
-      clos_refl_trans_1n R x z.
+    Here is a more useful definition... *)
+
+Inductive refl_step_closure {X:Type} (R: relation X) : relation X :=
+  | rsc_refl  : forall (x : X), refl_step_closure R x x
+  | rsc_step : forall (x y z : X),
+                    R x y ->
+                    refl_step_closure R y z ->
+                    refl_step_closure R x z.
+
+(** (Note that, aside from the naming of the constructors, this
+    definition is the same as the [multi] step relation used in many
+    other chapters.) *)
+
+(** (The following [Tactic Notation] definitions are explained in
+    another chapter.  You can ignore them if you haven't read the
+    explanation yet.) *)
+
+Tactic Notation "rt_cases" tactic(first) ident(c) :=
+  first;
+  [ Case_aux c "rt_step" | Case_aux c "rt_refl"
+  | Case_aux c "rt_trans" ].
+
+Tactic Notation "rsc_cases" tactic(first) ident(c) :=
+  first;
+  [ Case_aux c "rsc_refl" | Case_aux c "rsc_step" ].
 
 (** Our new definition of reflexive, transitive closure "bundles"
     the [rt_step] and [rt_trans] rules into the single rule step.
@@ -345,24 +383,27 @@ Inductive clos_refl_trans_1n {A : Type}
     Before we go on, we should check that the two definitions do
     indeed define the same relation...
 
-    First, we prove two lemmas showing that [clos_refl_trans_1n] mimics
+    First, we prove two lemmas showing that [refl_step_closure] mimics
     the behavior of the two "missing" [clos_refl_trans]
     constructors.  *)
 
-Lemma rsc_R : forall (X:Type) (R:relation X) (x y : X),
-       R x y -> clos_refl_trans_1n R x y.
+Theorem rsc_R : forall (X:Type) (R:relation X) (x y : X),
+       R x y -> refl_step_closure R x y.
 Proof.
   intros X R x y H.
-  apply rt1n_trans with y. apply H. apply rt1n_refl.   Qed.
+  apply rsc_step with y. apply H. apply rsc_refl.   Qed.
 
 (** **** Exercise: 2 stars, optional (rsc_trans)  *)
-Lemma rsc_trans :
+Theorem rsc_trans :
   forall (X:Type) (R: relation X) (x y z : X),
-      clos_refl_trans_1n R x y  ->
-      clos_refl_trans_1n R y z ->
-      clos_refl_trans_1n R x z.
+      refl_step_closure R x y  ->
+      refl_step_closure R y z ->
+      refl_step_closure R x z.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros. induction H. apply H0.
+  apply rsc_step with y. apply H. apply IHrefl_step_closure.
+  apply H0.
+Qed.
 (** [] *)
 
 (** Then we use these facts to prove that the two definitions of
@@ -372,9 +413,17 @@ Proof.
 (** **** Exercise: 3 stars, optional (rtc_rsc_coincide)  *)
 Theorem rtc_rsc_coincide :
          forall (X:Type) (R: relation X) (x y : X),
-  clos_refl_trans R x y <-> clos_refl_trans_1n R x y.
+  clos_refl_trans R x y <-> refl_step_closure R x y.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  split.
+  Case "clos_refl -> refl_step".
+  intros. induction H. apply rsc_R. apply H.
+  apply rsc_refl. apply rsc_trans with y. apply IHclos_refl_trans1.
+  apply IHclos_refl_trans2.
+  Case "refl_step -> clos_refl".
+  intros. induction H. apply rt_refl.
+  apply rt_trans with y. apply rt_step. apply H. apply IHrefl_step_closure.
+Qed.
 (** [] *)
 
-(** $Date: 2016-05-26 16:17:19 -0400 (Thu, 26 May 2016) $ *)
+(** $Date: 2014-12-31 15:31:47 -0500 (Wed, 31 Dec 2014) $ *)

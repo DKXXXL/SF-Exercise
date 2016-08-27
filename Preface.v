@@ -13,10 +13,10 @@
     background in logic or programming languages is assumed, though a
     degree of mathematical maturity will be helpful.
 
-    The principal novelty of the course is that it is one hundred
-    percent formalized and machine-checked: the entire text is
-    literally a script for Coq.  It is intended to be read alongside
-    an interactive session with Coq.  All the details in the text are
+    The principal novelty of the course is that it is one hundred per
+    cent formalized and machine-checked: the entire text is literally
+    a script for Coq.  It is intended to be read alongside an
+    interactive session with Coq.  All the details in the text are
     fully formalized in Coq, and the exercises are designed to be
     worked using Coq.
 
@@ -32,11 +32,12 @@
 
 (** Building reliable software is hard.  The scale and complexity of
     modern systems, the number of people involved in building them,
-    and the range of demands placed on them render it extremely
-    difficult to build software that is even more-or-less correct,
-    much less 100%% correct.  At the same time, the increasing degree
-    to which information processing is woven into every aspect of
-    society continually amplifies the cost of bugs and insecurities.
+    and the range of demands placed on them make it extremely
+    difficult even to build software that is more or less correct,
+    much less to get it 100%% correct.  At the same time, the
+    increasing degree to which information processing is woven into
+    every aspect of society continually amplifies the cost of bugs and
+    insecurities.
 
     Computer scientists and software engineers have responded to these
     challenges by developing a whole host of techniques for improving
@@ -45,7 +46,7 @@
     programming) to design philosophies for libraries (e.g.,
     model-view-controller, publish-subscribe, etc.) and programming
     languages (e.g., object-oriented programming, aspect-oriented
-    programming, functional programming, ...) to mathematical
+    programming, functional programming, ...) and to mathematical
     techniques for specifying and reasoning about properties of
     software and tools for helping validate these properties.
 
@@ -59,12 +60,12 @@
         arguments;
 
     (3) the idea of _functional programming_, both as a method of
-        programming that simplifies reasoning about programs and as a
-        bridge between programming and logic;
+        programming and as a bridge between programming and logic;
 
     (4) formal techniques for _reasoning about the properties of
-        specific programs_ (e.g., the fact that a sorting function or
-        a compiler obeys some formal specification); and
+        specific programs_ (e.g., the fact that a loop terminates on
+        all inputs, or that a sorting function or a compiler obeys a
+        particular specification); and
 
     (5) the use of _type systems_ for establishing well-behavedness
         guarantees for _all_ programs in a given programming
@@ -72,14 +73,12 @@
         be subverted at runtime).
 
     Each of these topics is easily rich enough to fill a whole course
-    in its own right, so tackling all of them together naturally means
-    that much will be left unsaid.  Nevertheless, we hope readers will
-    find that the themes illuminate and amplify each other and that
+    in its own right; taking all of them together naturally means that
+    much will be left unsaid.  But we hope readers will find that the
+    themes illuminate and amplify each other in useful ways, and that
     bringing them together creates a foundation from which it will be
     easy to dig into any of them more deeply.  Some suggestions for
-    further reading can be found in the [Postscript] chapter.
-    Bibliographic information for all cited works can be found in the
-    [Bib] chapter. *)
+    further reading can be found in the [Postscript] chapter. *)
 
 (** ** Logic *)
 
@@ -125,11 +124,10 @@
          among many others.
 
     This course is based around Coq, a proof assistant that has been
-    under development, mostly in France, since 1983 and that in recent
-    years has attracted a large community of users in both research
-    and industry.  Coq provides a rich environment for interactive
+    under development since 1983 at a number of French research labs
+    and universities.  Coq provides a rich environment for interactive
     development of machine-checked formal reasoning.  The kernel of
-    the Coq system is a simple proof-checker, which guarantees that
+    the Coq system is a simple proof-checker which guarantees that
     only correct deduction steps are performed.  On top of this
     kernel, the Coq environment provides high-level facilities for
     proof development, including powerful tactics for constructing
@@ -145,20 +143,20 @@
       example, to check the security of the JavaCard platform,
       obtaining the highest level of common criteria certification,
       and for formal specifications of the x86 and LLVM instruction
-      sets and programming languages such as C.
+      sets.
 
     - As an _environment for developing formally certified software_,
-      Coq has been used, for example, to build CompCert, a
-      fully-verified optimizing compiler for C, for proving the
-      correctness of subtle algorithms involving floating point
-      numbers, and as the basis for CertiCrypt, an environment for
-      reasoning about the security of cryptographic algorithms.
+      Coq has been used to build CompCert, a fully-verified optimizing
+      compiler for C, for proving the correctness of subtle algorithms
+      involving floating point numbers, and as the basis for
+      Certicrypt, an environment for reasoning about the security of
+      cryptographic algorithms.
 
-    - As a _realistic environment for functional programming with
-      dependent types_, it has inspired numerous innovations.  For
-      example, the Ynot project at Harvard embedded "relational Hoare
-      reasoning" (an extension of the _Hoare Logic_ we will see later
-      in this course) in Coq.
+    - As a _realistic environment for programming with dependent
+      types_, it has inspired numerous innovations.  For example, the
+      Ynot project at Harvard embeds "relational Hoare reasoning" (an
+      extension of the _Hoare Logic_ we will see later in this course)
+      in Coq.
 
     - As a _proof assistant for higher-order logic_, it has been used
       to validate a number of important results in mathematics.  For
@@ -179,7 +177,7 @@
    Elan, Foc or Phox are examples of this tacit convention. In French,
    'coq' means rooster, and it sounds like the initials of the
    Calculus of Constructions (CoC) on which it is based."  The rooster
-   is also the national symbol of France, and C-o-q are the first
+   is also the national symbol of France, and "Coq" are the first
    three letters of the name of Thierry Coquand, one of Coq's early
    developers. *)
 
@@ -193,7 +191,7 @@
 
     Functional programming has been developed over many decades --
     indeed, its roots go back to Church's lambda-calculus, which was
-    invented in the 1930s, before there were even any computers!  But
+    invented in the 1930s before the era of the computer began!  But
     since the early '90s it has enjoyed a surge of interest among
     industrial engineers and language designers, playing a key role in
     high-value systems at companies like Jane St. Capital, Microsoft,
@@ -219,7 +217,7 @@
     concurrent programs, where every piece of mutable state that is
     shared between threads is a potential source of pernicious bugs.
     Indeed, a large part of the recent interest in functional
-    programming in industry is due to its simpler behavior in the
+    programming in industry is due to its simple behavior in the
     presence of concurrency.
 
     Another reason for the current excitement about functional
@@ -228,15 +226,14 @@
     running a computation has no effect other than producing a result,
     then it does not matter _where_ it is run.  Similarly, if a data
     structure is never modified destructively, then it can be copied
-    freely, across cores or across the network.  Indeed, the
-    "Map-Reduce" idiom, which lies at the heart of massively
-    distributed query processors like Hadoop and is used by Google to
-    index the entire web is a classic example of functional
-    programming.
+    freely, across cores or across the network.  Indeed, the MapReduce
+    idiom that lies at the heart of massively distributed query
+    processors like Hadoop and is used by Google to index the entire
+    web is a classic example of functional programming.
 
-    For this course, functional programming has yet another
-    significant attraction: it serves as a bridge between logic and
-    computer science.  Indeed, Coq itself can be viewed as a
+    For purposes of this course, functional programming has yet
+    another significant attraction: it serves as a bridge between
+    logic and computer science.  Indeed, Coq itself can be viewed as a
     combination of a small but extremely expressive functional
     programming language plus with a set of tools for stating and
     proving logical assertions.  Moreover, when we come to look more
@@ -246,8 +243,8 @@
 
 (** ** Program Verification *)
 
-(** Approximately the first third of the book is devoted to developing
-    the conceptual framework of logic and functional programming and
+(** The first third of the book is devoted to developing the
+    conceptual framework of logic and functional programming and
     gaining enough fluency with Coq to use it for modeling and
     reasoning about nontrivial artifacts.  From this point on, we
     increasingly turn our attention to two broad topics of critical
@@ -258,17 +255,18 @@
 
     For both of these, the first thing we need is a way of
     representing programs as mathematical objects, so we can talk
-    about them precisely, together with ways of describing their
-    behavior in terms of mathematical functions or relations.  Our
-    tools for these tasks are _abstract syntax_ and _operational
-    semantics_, a method of specifying programming languages by
-    writing abstract interpreters.  At the beginning, we work with
-    operational semantics in the so-called "big-step" style, which
-    leads to somewhat simpler and more readable definitions when it is
-    applicable.  Later on, we switch to a more detailed "small-step"
-    style, which helps make some useful distinctions between different
-    sorts of "nonterminating" program behaviors and is applicable to a
-    broader range of language features, including concurrency.
+    about them precisely, and ways of describing their behavior in
+    terms of mathematical functions or relations.  Our tools for these
+    tasks are _abstract syntax_ and _operational semantics_, a method
+    of specifying the behavior of programs by writing abstract
+    interpreters.  At the beginning, we work with operational
+    semantics in the so-called "big-step" style, which leads to
+    somewhat simpler and more readable definitions, in those cases
+    where it is applicable.  Later on, we switch to a more detailed
+    "small-step" style, which helps make some useful distinctions
+    between different sorts of "nonterminating" program behaviors and
+    which is applicable to a broader range of language features,
+    including concurrency.
 
     The first programming language we consider in detail is _Imp_, a
     tiny toy language capturing the core features of conventional
@@ -277,32 +275,33 @@
     properties of Imp programs.
 
     First, we consider what it means to say that two Imp programs are
-    _equivalent_ in the intuitive sense that they yield the same
-    behavior when started in any initial memory state.  This notion of
-    equivalence then becomes a criterion for judging the correctness
-    of _metaprograms_ -- programs that manipulate other programs, such
-    as compilers and optimizers.  We build a simple optimizer for Imp
-    and prove that it is correct.
+    _equivalent_ in the sense that they give the same behaviors for
+    all initial memories.  This notion of equivalence then becomes a
+    criterion for judging the correctness of _metaprograms_ --
+    programs that manipulate other programs, such as compilers and
+    optimizers.  We build a simple optimizer for Imp and prove that it
+    is correct.
 
-    Second, we develop a methodology for proving that particular Imp
-    programs satisfy formal specifications of their behavior.  We
-    introduce the notion of _Hoare triples_ -- Imp programs annotated
-    with pre- and post-conditions describing what should be true about
-    the memory in which they are started and what they promise to make
-    true about the memory in which they terminate -- and the reasoning
-    principles of _Hoare Logic_, a "domain-specific logic" specialized
-    for convenient compositional reasoning about imperative programs,
-    with concepts like "loop invariant" built in.
+    Second, we develop a methodology for proving that Imp programs
+    satisfy formal specifications of their behavior.  We introduce the
+    notion of _Hoare triples_ -- Imp programs annotated with pre- and
+    post-conditions describing what should be true about the memory in
+    which they are started and what they promise to make true about
+    the memory in which they terminate -- and the reasoning principles
+    of _Hoare Logic_, a "domain-specific logic" specialized for
+    convenient compositional reasoning about imperative programs, with
+    concepts like "loop invariant" built in.
 
     This part of the course is intended to give readers a taste of the
-    key ideas and mathematical tools used in a wide variety of
-    real-world software and hardware verification tasks. *)
+    key ideas and mathematical tools used for a wide variety of
+    real-world software and hardware verification tasks.
+*)
 
 (** ** Type Systems *)
 
-(** Our final major topic, covering approximately the last third of
-    the course, is _type systems_, a powerful set of tools for
-    establishing properties of _all_ programs in a given language.
+(** Our final major topic, covering the last third of the course, is
+    _type systems_, a powerful set of tools for establishing
+    properties of _all_ programs in a given language.
 
     Type systems are the best established and most popular example of
     a highly successful class of formal verification techniques known
@@ -310,40 +309,33 @@
     of modest power -- modest enough that automatic checkers can be
     built into compilers, linkers, or program analyzers and thus be
     applied even by programmers unfamiliar with the underlying
-    theories.  Other examples of lightweight formal methods include
+    theories.  (Other examples of lightweight formal methods include
     hardware and software model checkers, contract checkers, and
     run-time property monitoring techniques for detecting when some
-    component of a system is not behaving according to specification.
+    component of a system is not behaving according to specification).
 
     This topic brings us full circle: the language whose properties we
-    study in this part, the _simply typed lambda-calculus_, is
+    study in this part, called the _simply typed lambda-calculus_, is
     essentially a simplified model of the core of Coq itself!
 
 *)
 
 (* ###################################################################### *)
-(** ** Further Reading *)
-
-(** This text is intended to be self contained, but readers looking
-    for a deeper treatment of a particular topic will find suggestions
-    for further reading in the [Postscript] chapter. *)
-
-(* ###################################################################### *)
 (** * Practicalities *)
 
+(* ###################################################################### *)
 (** ** Chapter Dependencies *)
 
 (** A diagram of the dependencies between chapters and some suggested
     paths through the material can be found in the file [deps.html]. *)
 
+(* ###################################################################### *)
 (** ** System Requirements *)
 
 (** Coq runs on Windows, Linux, and OS X.  You will need:
 
        - A current installation of Coq, available from the Coq home
-         page.  Everything should work with version 8.4.  (Version 8.5
-         will _not_ work, due to a few incompatible changes in Coq
-         between 8.4 and 8.5.)
+         page.  Everything should work with version 8.4.
 
        - An IDE for interacting with Coq.  Currently, there are two
          choices:
@@ -354,11 +346,11 @@
              "Proof General").
 
            - CoqIDE is a simpler stand-alone IDE.  It is distributed
-             with Coq, so it should "just work" once you have Coq
-             installed.  It can also be compiled from scratch, but on
-             some platforms this may involve installing additional
-             packages for GUI libraries and such. *)
+             with Coq, but on some platforms compiling it involves
+             installing additional packages for GUI libraries and
+             such. *)
 
+(* ###################################################################### *)
 (** ** Exercises *)
 
 (** Each chapter includes numerous exercises.  Each is marked with a
@@ -384,7 +376,7 @@
     readers.  Advanced exercises are for readers who want an extra
     challenge (and, in return, a deeper contact with the material).
 
-    _Please do not post solutions to the exercises in any public place_: 
+    _Please do not post solutions to the exercises in public places_:
     Software Foundations is widely used both for self-study and for
     university courses.  Having solutions easily available makes it
     much less useful for courses, which typically have graded homework
@@ -393,14 +385,15 @@
     search engines.
 *)
 
+(* ###################################################################### *)
 (** ** Downloading the Coq Files *)
 
 (** A tar file containing the full sources for the "release version"
     of these notes (as a collection of Coq scripts and HTML files) is
     available here:
-
-        http://www.cis.upenn.edu/~bcpierce/sf
-
+<<
+        http://www.cis.upenn.edu/~bcpierce/sf   
+>>
     If you are using the notes as part of a class, you may be given
     access to a locally extended version of the files, which you
     should use instead of the release version.
@@ -413,45 +406,19 @@
     undoubtedly find things you'd like to change, improve, or add.
     Your contributions are welcome!
 
-    To keep the legalities of the situation clean and to have a single
-    point of responsibility in case the need should ever arise to
-    adjust the license terms, sublicense, etc., we ask all
-    contributors (i.e., everyone with access to the developers'
-    repository) to assign copyright in their contributions to the
-    appropriate "author of record," as follows:
-
-        I hereby assign copyright in my past and future contributions
-        to the Software Foundations project to the Author of Record of
-        each volume or component, to be licensed under the same terms
-        as the rest of Software Foundations.  I understand that, at
-        present, the Authors of Record are as follows: For Volumes 1
-        and 2, known until 2016 as "Software Foundations" and from
-        2016 as (respectively) "Logical Foundations" and "Programming
-        Foundations," the Author of Record is Benjamin Pierce.  For
-        Volume 3, "Verified Functional Algorithms", the Author of
-        Record is Andrew W. Appel. For components outside of
-        designated Volumes (e.g., typesetting and grading tools and
-        other software infrastructure), the Author of Record is
-        Benjamin Pierce.
-
-    To get started, please send an email to Benjamin Pierce, describing
-    yourself and how you plan to use the materials and including 
-       (1) the above copyright transfer text and 
-       (2) the result of doing "htpasswd -s -n NAME"
-    where NAME is your preferred user name.
-
-    We'll set you up with access to the subversion repository and 
-    developers' mailing lists.  In the repository you'll find a 
-    file [INSTRUCTORS] with further instructions.
-
-*)
+    Please send an email to Benjamin Pierce describing yourself and
+    how you would like to use the materials, and including the result
+    of doing "htpasswd -s -n NAME", where NAME is your preferred user
+    name.  We'll set you up with read/write access to our subversion
+    repository and developers' mailing list; in the repository you'll
+    find a [README] with further instructions. *)
 
 (* ###################################################################### *)
 (** * Translations *)
 
-(** Thanks to the efforts of a team of volunteer translators,
-    _Software Foundations_ can now be enjoyed in Japanese at
-    [http://proofcafe.org/sf].  A Chinese translation is underway.
+(** Thanks to the efforts of a team of volunteer translators, _Software 
+    Foundations_ can now be enjoyed in Japanese at [http://proofcafe.org/sf]
 *)
 
-(** $Date: 2016-05-26 17:51:14 -0400 (Thu, 26 May 2016) $ *)
+(** $Date: 2014-12-31 15:31:47 -0500 (Wed, 31 Dec 2014) $ *)
+

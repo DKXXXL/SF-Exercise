@@ -276,5 +276,125 @@ Qed.
 | pal'S : forall (s: list X) (x : X) ,pal' [x] -> pal' (s ++ (x :: (rev' s)))
 | pal'o : forall s : list X, pal' (s ++ (rev' s)).
   
-  Theorem palindrom_converse:
-Abort.
+  Theorem converse_pal:
+    forall (X : Type) (l : list X),
+      l = rev' l ->
+      pal l.
+    Abort.
+
+  
+    Inductive subsequence {X : Type} : list X -> list X -> Prop :=
+  | subs0 : forall (l : list X), subsequence [] l
+  | subs1 : forall (t l : list X) (h : X), subsequence t l -> subsequence (t ++ [h])(l ++ [h])
+  | subs2 : forall (t l : list X) (h : X), subsequence t l -> subsequence t (l ++ [h]).
+(*
+    Theorem subseq_refl:
+      forall (X : Type) (a : list X),
+        subsequence a a.
+      intros X a.
+      induction a.
+      apply subs0.
+      apply (subs1 a a x IHa).
+    Qed.
+
+    Theorem subseq_app:
+      forall (X : Type) (l1 l2 l3: list X),
+        subsequence l1 l2 ->
+        subsequence l1 (l2 ++ l3).
+      intros X l1 l2 l3 h.
+      generalize dependent l3.
+      induction h.
+      intros l3.
+      apply subs0.
+      intros l3.
+      simpl.
+      assert (subsequence t (l ++ l3)).
+      apply IHh.
+      apply (subs1 t (l++l3) h H).
+      intros l3.
+      simpl.
+      assert (subsequence t (l ++ l3)).
+      apply IHh.
+      apply subs2.
+      apply H.
+
+    Qed.
+ *)
+    Theorem nothappening :
+      forall (X: Type) (l : list X) (h : X),
+        l ++ [h] = [] -> False.
+      intros X l h.
+      induction l.
+      intros h1.
+      inversion h1.
+      intros h2.
+      inversion h2.
+    Qed.
+      Theorem subseq_trans:
+      forall (X : Type) (l1 l2 l3 : list X),
+        subsequence l1 l2 ->
+        subsequence l2 l3 ->
+        subsequence l1 l3.
+        intros X l1 l2 l3.
+        intros h1.
+        intros h2.
+        generalize dependent l1.
+        induction h2.
+        intros l1 h.
+        inversion h.
+        apply subs0.
+        apply nothappening in H.
+        inversion H.
+        apply nothappening in H.
+        inversion H.
+      Abort.
+
+      Theorem nottt :
+        False -> False.
+        intros h.
+        inversion h.
+      Qed.
+
+      Definition plus_fact : Prop := 2 + 2 = 4.
+      Theorem plus_facc :
+        plus_fact.
+        reflexivity.
+      Qed.
+      Check plus_fact.
+      Theorem plus_faa : Prop.
+        apply plus_fact.
+      Qed.
+      Print plus_faa.
+      Theorem plll : Type.
+        apply Prop.
+      Qed.
+
+      Definition combine_odd_even (Podd Peven : nat -> Prop) : nat -> Prop :=
+        fun (n : nat) =>
+          (oddb n = false -> Peven n) /\ (oddb n = true -> Podd n).
+
+      Theorem combine_odd_even_intro :
+        forall (Podd Peven : nat -> Prop) (n : nat),
+          (oddb n = true -> Podd n) ->
+          (oddb n = false -> Peven n) ->
+          combine_odd_even Podd Peven n.
+        intros podd peven.
+        intros n h1 h2.
+        unfold combine_odd_even.
+        split.
+        apply h2.
+        apply h1.
+      Qed.
+      Theorem combine_odd_even_elim_odd :
+        forall (podd peven : nat -> Prop) (n : nat),
+          combine_odd_even podd peven n ->
+          oddb n = true ->
+          podd n.
+        intros podd peven n.
+        intros h1 h2.
+        unfold combine_odd_even in h1.
+        inversion h1.
+        apply H0 in h2.
+        apply h2.
+      Qed.
+      

@@ -3,6 +3,7 @@
 Require Export Hoare.
 
 
+
 (* ####################################################### *)
 (** * Decorated Programs *)
 
@@ -18,7 +19,7 @@ Require Export Hoare.
 (**
       {{ True }} ->>
       {{ m = m }}
-    X ::= m;
+    X ::= m;;
       {{ X = m }} ->>
       {{ X = m /\ p = p }}
     Z ::= p;
@@ -27,13 +28,13 @@ Require Export Hoare.
     WHILE X <> 0 DO
         {{ Z - X = p - m /\ X <> 0 }} ->>
         {{ (Z - 1) - (X - 1) = p - m }}
-      Z ::= Z - 1;
+      Z ::= Z - 1;;
         {{ Z - (X - 1) = p - m }}
       X ::= X - 1
         {{ Z - X = p - m }}
     END;
       {{ Z - X = p - m /\ ~ (X <> 0) }} ->>
-      {{ Z = p - m }} ->>
+      {{ Z = p - m }}
 *)
 
 (** Concretely, a decorated program consists of the program text
@@ -48,21 +49,30 @@ Require Export Hoare.
           {{ P }}
           SKIP
           {{ P }}
+*)
+
+(**
     - The sequential composition of [c1] and [c2] is locally
       consistent (with respect to assertions [P] and [R]) if [c1] is
       locally consistent (with respect to [P] and [Q]) and [c2] is
       locally consistent (with respect to [Q] and [R]):
           {{ P }}
-          c1;
+          c1;;
           {{ Q }}
           c2
           {{ R }}
+*)
+
+(**
 
     - An assignment is locally consistent if its precondition is
       the appropriate substitution of its postcondition:
           {{ P [X |-> a] }}
           X ::= a
           {{ P }}
+*)
+
+(**
     - A conditional is locally consistent (with respect to assertions
       [P] and [Q]) if the assertions at the top of its "then" and
       "else" branches are exactly [P /\ b] and [P /\ ~b] and if its "then"
@@ -80,6 +90,9 @@ Require Export Hoare.
             {{ Q }}
           FI
           {{ Q }}
+*)
+
+(**
 
     - A while loop with precondition [P] is locally consistent if its
       postcondition is [P /\ ~b] and if the pre- and postconditions of
@@ -91,6 +104,9 @@ Require Export Hoare.
             {{ P }}
           END
           {{ P /\ ~b }}
+*)
+
+(**
 
     - A pair of assertions separated by [->>] is locally consistent if
       the first implies the second (in all states):
@@ -120,8 +136,8 @@ Require Export Hoare.
 (** Here is a program that swaps the values of two variables using
     addition and subtraction (instead of by assigning to a temporary
     variable).
-  X ::= X + Y;
-  Y ::= X - Y;
+  X ::= X + Y;;
+  Y ::= X - Y;;
   X ::= X - Y
     We can prove using decorations that this program is correct --
     i.e., it always swaps the values of variables [X] and [Y]. *)
@@ -129,9 +145,9 @@ Require Export Hoare.
 (**
  (1)     {{ X = m /\ Y = n }} ->>
  (2)     {{ (X + Y) - ((X + Y) - Y) = n /\ (X + Y) - Y = m }}
-        X ::= X + Y;
+        X ::= X + Y;;
  (3)     {{ X - (X - Y) = n /\ X - Y = m }}
-        Y ::= X - Y;
+        Y ::= X - Y;;
  (4)     {{ X - Y = n /\ Y = m }}
         X ::= X - Y
  (5)     {{ X = n /\ Y = m }}
@@ -199,24 +215,25 @@ These decorations were constructed as follows:
     arbitrary natural numbers [n] and [m] (for example, [3 - 5 + 5 =
     5]). *)
 
-(** **** Exercise: 2 stars (if_minus_plus_reloaded) *)
+(** **** Exercise: 2 stars (if_minus_plus_reloaded)  *)
 (** Fill in valid decorations for the following program:
    {{ True }}
   IFB X <= Y THEN
-      {{ True /\ X <= Y }} ->>
-      {{ Y - X = Y - X \/ Y = X + (Y - X) }}
+      {{ X <= Y }} ->>
+      {{ Y = X + (Y - X) }}
     Z ::= Y - X
-      {{ Z = Y - X \/ Y = X + Z }}
+      {{ Y = X + Z }}
   ELSE
-      {{ True /\ ~ (X <= Y) }} ->>
-      {{ Z = (X + Z) - X \/ X + Z = X + Z }}
+      {{ X > Y }} ->>
+      {{ X + Z = X + Z }}
     Y ::= X + Z
-      {{ Z = Y - X \/ Y = X + Z }}
+      {{ Y = X + Z }}
   FI
-    {{ Z = Y - X \/ Y = X + Z }} ->>
     {{ Y = X + Z }}
 *)
 
+
+(** [] *)
 
 (* ####################################################### *)
 (** ** Example: Reduce to Zero (Trivial Loop) *)
@@ -289,10 +306,10 @@ Proof.
 (** The following Imp program calculates the integer division and
     remainder of two numbers [m] and [n] that are arbitrary constants
     in the program.
-  X ::= m;
-  Y ::= 0;
+  X ::= m;;
+  Y ::= 0;;
   WHILE n <= X DO
-    X ::= X - n;
+    X ::= X - n;;
     Y ::= Y + 1
   END;
     In other words, if we replace [m] and [n] by concrete numbers and
@@ -302,7 +319,7 @@ Proof.
 
 (** In order to give a specification to this program we need to
     remember that dividing [m] by [n] produces a reminder [X] and a
-    quotient [Y] so that [n * Y + X = m /\ X > n].
+    quotient [Y] so that [n * Y + X = m /\ X < n].
 
     It turns out that we get lucky with this program and don't have to
     think very hard about the loop invariant: the invariant is the
@@ -311,14 +328,14 @@ Proof.
 
  (1)    {{ True }} ->>
  (2)    {{ n * 0 + m = m }}
-      X ::= m;
+      X ::= m;;
  (3)    {{ n * 0 + X = m }}
-      Y ::= 0;
+      Y ::= 0;;
  (4)    {{ n * Y + X = m }}
       WHILE n <= X DO
  (5)      {{ n * Y + X = m /\ n <= X }} ->>
  (6)      {{ n * (Y + 1) + (X - n) = m }}
-        X ::= X - n;
+        X ::= X - n;;
  (7)      {{ n * (Y + 1) + X = m }}
         Y ::= Y + 1
  (8)      {{ n * Y + X = m }}
@@ -361,7 +378,7 @@ Proof.
     correctness with respect to the following specification:
              {{ X = m /\ Y = n }}
            WHILE X <> 0 DO
-             Y ::= Y - 1;
+             Y ::= Y - 1;;
              X ::= X - 1
            END
              {{ Y = n - m }}
@@ -375,7 +392,7 @@ Proof.
            WHILE X <> 0 DO
     (3)        {{ I /\ X <> 0 }}  ->>      (c)
     (4)        {{ I[X |-> X-1][Y |-> Y-1] }}
-             Y ::= Y - 1;
+             Y ::= Y - 1;;
     (5)        {{ I[X |-> X-1] }}
              X ::= X - 1
     (6)        {{ I }}
@@ -411,7 +428,7 @@ Proof.
            WHILE X <> 0 DO
     (3)        {{ True /\ X <> 0 }}  ->>    (c - OK)
     (4)        {{ True }}
-             Y ::= Y - 1;
+             Y ::= Y - 1;;
     (5)        {{ True }}
              X ::= X - 1
     (6)        {{ True }}
@@ -435,7 +452,7 @@ Proof.
            WHILE X <> 0 DO
     (3)        {{ Y = n - m /\ X <> 0 }}  ->>   (c - WRONG!)
     (4)        {{ Y - 1 = n - m }}
-             Y ::= Y - 1;
+             Y ::= Y - 1;;
     (5)        {{ Y = n - m }}
              X ::= X - 1
     (6)        {{ Y = n - m }}
@@ -445,8 +462,8 @@ Proof.
 
     This time, condition (b) holds trivially, but (a) and (c) are
     broken. Condition (a) requires that (1) [X = m /\ Y = n]
-    implies (2) [Y = n - m].  If we substitute [X] by [m] we have to
-    show that [m = n - m] for arbitrary [m] and [n], which does not
+    implies (2) [Y = n - m].  If we substitute [Y] by [n] we have to
+    show that [n = n - m] for arbitrary [m] and [n], which does not
     hold (for instance, when [m = n = 1]).  Condition (c) requires that
     [n - m - 1 = n - m], which fails, for instance, for [n = 1] and [m =
     0]. So, although [Y = n - m] holds at the end of the loop, it does
@@ -474,7 +491,7 @@ Proof.
            WHILE X <> 0 DO
     (3)        {{ Y - X = n - m /\ X <> 0 }}  ->>    (c - OK)
     (4)        {{ (Y - 1) - (X - 1) = n - m }}
-             Y ::= Y - 1;
+             Y ::= Y - 1;;
     (5)        {{ Y - (X - 1) = n - m }}
              X ::= X - 1
     (6)        {{ Y - X = n - m }}
@@ -491,47 +508,32 @@ Proof.
 (** ** Exercise: Slow Assignment *)
 
 
-(** **** Exercise: 2 stars (slow_assignment) *)
+(** **** Exercise: 2 stars (slow_assignment)  *)
 (** A roundabout way of assigning a number currently stored in [X] to
     the variable [Y] is to start [Y] at [0], then decrement [X] until
     it hits [0], incrementing [Y] at each step. Here is a program that
     implements this idea:
       {{ X = m }}
-    Y ::= 0;
+    Y ::= 0;;
     WHILE X <> 0 DO
-      X ::= X - 1;
-      Y ::= Y + 1;
+      X ::= X - 1;;
+      Y ::= Y + 1
     END
       {{ Y = m }}
     Write an informal decorated program showing that this is correct. *)
 
-(*
-      {{ X = m }} ->>
-      {{ 0 + X = m }}
-    Y ::= 0;
-      {{ Y + X = m }}
-    WHILE X <> 0 DO
-        {{ Y + X = m /\ X <> 0 }} ->>
-        {{ (Y + 1) + (X - 1) = m }}
-      X ::= X - 1;
-        {{ (Y + 1) + X = m }}
-      Y ::= Y + 1;
-        {{ Y + X = m }}
-    END
-      {{ Y + X = m /\ ~ (X <> 0)}} ->>
-      {{ Y = m }}
- *)
+(* X + Y = m *)
 (** [] *)
 
 (* ####################################################### *)
 (** ** Exercise: Slow Addition *)
 
 
-(** **** Exercise: 3 stars, optional (add_slowly_decoration) *)
+(** **** Exercise: 3 stars, optional (add_slowly_decoration)  *)
 (** The following program adds the variable X into the variable Z
     by repeatedly decrementing X and incrementing Z.
   WHILE X <> 0 DO
-     Z ::= Z + 1;
+     Z ::= Z + 1;;
      X ::= X - 1
   END
 
@@ -540,20 +542,10 @@ Proof.
     specification of [add_slowly]; then (informally) decorate the
     program accordingly. *)
 
-(*
-    {{ X = m /\ Z = n }} ->>
-    {{ Z + X = n + m }}
-  WHILE X <> 0 DO
-       {{ Z + X = n + m /\ X <> 0 }} ->>
-       {{ (Z + 1) + (X - 1) = n + m }}
-     Z ::= Z + 1;
-       {{ Z + (X - 1) = n + m }}
-     X ::= X - 1
-       {{ Z + X = n + m }}
-  END
-    {{ Z + X = n + m /\ ~ (X <> 0) }} ->>
-    {{ Z = n + m}}
-*)
+(* X = m /\ Z = n *)
+(* Z = n + m - X *)
+(* Z = n + m *)
+
 (** [] *)
 
 (* ####################################################### *)
@@ -604,7 +596,7 @@ Fixpoint parity x :=
     have [parity X = parity (X-2)]. *)
 
 
-(** **** Exercise: 3 stars, optional (parity_formal) *)
+(** **** Exercise: 3 stars, optional (parity_formal)  *)
 (** Translate this proof to Coq. Refer to the reduce-to-zero example
     for ideas. You may find the following two lemmas useful: *)
 
@@ -633,25 +625,20 @@ Theorem parity_correct : forall m,
     {{ fun st => st X = parity m }}.
 Proof.
   intros.
-  (* First we need to transform the predcondition and the
-     postcondition so that hoare_while will apply. *)
   apply hoare_consequence_pre with (fun st => parity (st X) = parity m).
   eapply hoare_consequence_post.
-
   apply hoare_while.
-  Case "Loop body".
-    eapply hoare_consequence_pre. apply hoare_asgn.
-    intros st [Hparity Hb]. unfold assn_sub. simpl. rewrite update_eq.
-    rewrite <- Hparity. apply parity_ge_2.
-    unfold bassn, beval in Hb. apply ble_nat_true. apply Hb.
-  Case "Postcondition".
-    intros st [Hparity Hb]. rewrite <- Hparity.
-    symmetry. apply parity_lt_2.
-    unfold bassn, beval in Hb. apply not_true_is_false in Hb.
-    apply ble_nat_false. apply Hb.
-  Case "Precondition".
-    intros st H.
-    rewrite H. reflexivity.  Qed.
+  eapply hoare_consequence_pre.
+  apply hoare_asgn.
+  intros st H. destruct H. unfold assn_sub. rewrite update_eq.
+  simpl. rewrite <- H. apply parity_ge_2.
+  unfold bassn in H0. simpl in H0. destruct (st X); inversion H0.
+  destruct n; inversion H0. omega.
+  intros st H. destruct H. rewrite <- H. symmetry. apply parity_lt_2.
+  unfold not. intros. unfold bassn in H0; simpl in H0.
+  destruct (st X). omega. destruct n. omega. apply H0. reflexivity.
+  intros st H. rewrite H; reflexivity.
+Qed.
 (** [] *)
 
 (* ####################################################### *)
@@ -661,7 +648,7 @@ Proof.
 (** The following program computes the square root of [X]
     by naive iteration:
       {{ X=m }}
-    Z ::= 0;
+    Z ::= 0;;
     WHILE (Z+1)*(Z+1) <= X DO
       Z ::= Z+1
     END
@@ -672,7 +659,7 @@ Proof.
     invariant, obtaining the following decorated program:
  (1)  {{ X=m }}  ->>           (a - second conjunct of (2) WRONG!)
  (2)  {{ 0*0 <= m /\ m<1*1 }}
-    Z ::= 0;
+    Z ::= 0;;
  (3)  {{ Z*Z <= m /\ m<(Z+1)*(Z+1) }}
     WHILE (Z+1)*(Z+1) <= X DO
  (4)    {{ Z*Z<=m /\ (Z+1)*(Z+1)<=X }}  ->>           (c - WRONG!)
@@ -724,10 +711,10 @@ Proof.
 (** Here is a program that squares [X] by repeated addition:
 
     {{ X = m }}
-  Y ::= 0;
-  Z ::= 0;
+  Y ::= 0;;
+  Z ::= 0;;
   WHILE  Y  <>  X  DO
-    Z ::= Z + X;
+    Z ::= Z + X;;
     Y ::= Y + 1
   END
     {{ Z = m*m }}
@@ -740,14 +727,14 @@ Proof.
     that too, leading to the invariant candidate [Z = m * m /\ X = m].
       {{ X = m }} ->>                            (a - WRONG)
       {{ 0 = m*m /\ X = m }}
-    Y ::= 0;
+    Y ::= 0;;
       {{ 0 = m*m /\ X = m }}
-    Z ::= 0;
+    Z ::= 0;;
       {{ Z = m*m /\ X = m }}
     WHILE Y <> X DO
         {{ Z = Y*m /\ X = m /\ Y <> X }} ->>     (c - WRONG)
         {{ Z+X = m*m /\ X = m }}
-      Z ::= Z + X;
+      Z ::= Z + X;;
         {{ Z = m*m /\ X = m }}
       Y ::= Y + 1
         {{ Z = m*m /\ X = m }}
@@ -764,9 +751,9 @@ Proof.
     new invariant candidate [Z = Y*m /\ X = m].
       {{ X = m }} ->>                               (a - OK)
       {{ 0 = 0*m /\ X = m }}
-    Y ::= 0;
+    Y ::= 0;;
       {{ 0 = Y*m /\ X = m }}
-    Z ::= 0;
+    Z ::= 0;;
       {{ Z = Y*m /\ X = m }}
     WHILE Y <> X DO
         {{ Z = Y*m /\ X = m /\ Y <> X }} ->>        (c - OK)
@@ -791,34 +778,34 @@ Proof.
 (* ####################################################### *)
 (** ** Exercise: Factorial *)
 
-(** **** Exercise: 3 stars (factorial) *)
+(** **** Exercise: 3 stars (factorial)  *)
 (** Recall that [n!] denotes the factorial of [n] (i.e. [n! =
     1*2*...*n]).  Here is an Imp program that calculates the factorial
     of the number initially stored in the variable [X] and puts it in
     the variable [Y]:
-    {{ X = m }} ;
-  Y ::= 1
+    {{ X = m }}
+  Y ::= 1 ;;
   WHILE X <> 0
   DO
-     Y ::= Y * X
+     Y ::= Y * X ;;
      X ::= X - 1
   END
     {{ Y = m! }}
 
     Fill in the blanks in following decorated program:
     {{ X = m }} ->>
-    {{ 1 * X! = m! }}
-  Y ::= 1;
+    {{ X! = m! }}
+  Y ::= 1;;
     {{ Y * X! = m! }}
   WHILE X <> 0
-  DO   {{ Y * X! = m! /\ X <> 0 }} ->>
+  DO   {{ Y * X! = m! /\ X > 0 }} ->>
        {{ Y * X * (X - 1)! = m! }}
-     Y ::= Y * X;
+     Y ::= Y * X;;
        {{ Y * (X - 1)! = m! }}
      X ::= X - 1
        {{ Y * X! = m! }}
   END
-    {{ Y * X! = m! /\ X = 0 }} ->>
+    {{ Y * X! = m! /\ x = 0 }} ->>
     {{ Y = m! }}
 *)
 
@@ -829,7 +816,7 @@ Proof.
 (* ####################################################### *)
 (** ** Exercise: Min *)
 
-(** **** Exercise: 3 stars (Min_Hoare) *)
+(** **** Exercise: 3 stars (Min_Hoare)  *)
 (** Fill in valid decorations for the following program.
   For the => steps in your annotations, you may rely (silently) on the
   following facts about min
@@ -841,42 +828,43 @@ Proof.
 
   plus, as usual, standard high-school algebra.
 
-    {{ True }} ->>
-    {{ 0 + min a b = min a b }}
-  X ::= a;
-    {{ 0 + min X b = min a b }}
-  Y ::= b;
-    {{ 0 + min X Y = min a b }}
-  Z ::= 0;
-    {{ Z + min X Y = min a b }}
+  {{ True }} ->>
+  {{ 0 = min a b - min a b }}
+  X ::= a;;
+  {{ 0 = min a b = min X b }}
+  Y ::= b;;
+  {{ 0 = min a b - min X Y }}
+  Z ::= 0;;
+  {{ Z = min a b - min X Y }}
   WHILE (X <> 0 /\ Y <> 0) DO
-      {{ Z + min X Y = min a b /\ (X <> 0 /\ Y <> 0) }} ->>
-      {{ (Z + 1) + min (X - 1) (Y - 1) = min a b }}
-    X := X - 1;
-      {{ (Z + 1) + min X (Y - 1) = min a b }}
-    Y := Y - 1;
-      {{ (Z + 1) + min X Y = min a b }}
-    Z := Z + 1;
-      {{ Z + min X Y = min a b }}
+  {{ Z = min a b - min X Y /\ X <> 0 /\ Y <> 0 }} ->>
+  {{ Z = min a b - (min X-1 Y-1 + 1) }}
+  X := X - 1;;
+  {{ Z + 1 = min a b - (min X Y-1) }}
+  Y := Y - 1;;
+  {{ Z + 1 = min a b - (min X Y) }}
+  Z := Z + 1
+  {{ Z = min a b - min X Y }}
   END
-    {{ Z + min X Y = min a b /\ (X = 0 \/ Y = 0) }} ->>
-    {{ Z = min a b }}
+  {{ Z = min a b - min X Y /\ min X Y = 0 }} ->>
+  {{ Z = min a b }}
 *)
 
 
+(** [] *)
 
 
-(** **** Exercise: 3 stars (two_loops) *)
+(** **** Exercise: 3 stars (two_loops)  *)
 (** Here is a very inefficient way of adding 3 numbers:
-  X ::= 0;
-  Y ::= 0;
-  Z ::= c;
+  X ::= 0;;
+  Y ::= 0;;
+  Z ::= c;;
   WHILE X <> a DO
-    X ::= X + 1;
+    X ::= X + 1;;
     Z ::= Z + 1
-  END;
+  END;;
   WHILE Y <> b DO
-    Y ::= Y + 1;
+    Y ::= Y + 1;;
     Z ::= Z + 1
   END
 
@@ -885,26 +873,26 @@ Proof.
 
     {{ True }} ->>
     {{ c = 0 + 0 + c }}
-  X ::= 0;
+  X ::= 0;;
     {{ c = X + 0 + c }}
-  Y ::= 0;
+  Y ::= 0;;
     {{ c = X + Y + c }}
-  Z ::= c;
+  Z ::= c;;
     {{ Z = X + Y + c }}
   WHILE X <> a DO
       {{ Z = X + Y + c /\ X <> a }} ->>
-      {{ Z + 1 = (X + 1) + Y + c }}
-    X ::= X + 1;
+      {{ Z + 1 = X + 1 + Y + c}}
+    X ::= X + 1;;
       {{ Z + 1 = X + Y + c }}
     Z ::= Z + 1
       {{ Z = X + Y + c }}
-  END;
+  END;;
     {{ Z = X + Y + c /\ X = a }} ->>
     {{ Z = a + Y + c }}
   WHILE Y <> b DO
       {{ Z = a + Y + c /\ Y <> b }} ->>
-      {{ Z + 1 = a + (Y + 1) + c }}
-    Y ::= Y + 1;
+      {{ Z + 1 = a + Y + 1 + c }}
+    Y ::= Y + 1;;
       {{ Z + 1 = a + Y + c }}
     Z ::= Z + 1
       {{ Z = a + Y + c }}
@@ -913,46 +901,26 @@ Proof.
     {{ Z = a + b + c }}
 *)
 
+(** [] *)
 
 (* ####################################################### *)
 (** ** Exercise: Power Series *)
 
 
-(** **** Exercise: 4 stars, optional (dpow2_down) *)
+(** **** Exercise: 4 stars, optional (dpow2_down)  *)
 (** Here is a program that computes the series:
     [1 + 2 + 2^2 + ... + 2^m = 2^(m+1) - 1]
-  X ::= 0;
-  Y ::= 1;
-  Z ::= 1;
+  X ::= 0;;
+  Y ::= 1;;
+  Z ::= 1;;
   WHILE X <> m DO
-    Z ::= 2 * Z;
-    Y ::= Y + Z;
-    X ::= X + 1;
+    Z ::= 2 * Z;;
+    Y ::= Y + Z;;
+    X ::= X + 1
   END
     Write a decorated program for this. *)
 
-(*
-    {{ True }} ->>
-    {{ 1 = 2^(0+1) - 1 }}
-  X ::= 0;
-    {{ 1 = 2^(X+1) - 1 }}
-  Y ::= 1;
-    {{ Y = 2^(X+1) - 1 }}
-  Z ::= 1;
-    {{ Y = 2^(X+1) - 1 }}
-  WHILE X <> m DO
-      {{ Y = 2^(X+1) - 1 /\ X <> m }} ->>
-      {{ Y + (2 * Z) = 2^((X+1)+1) - 1 }}
-    Z ::= 2 * Z;
-      {{ Y + Z = 2^((X+1)+1) - 1 }}
-    Y ::= Y + Z;
-      {{ Y = 2^((X+1)+1) - 1 }}
-    X ::= X + 1;
-      {{ Y = 2^(X+1) - 1 }}
-  END
-    {{ Y = 2^(X+1) - 1 /\ X = m }} ->>
-    {{ Y = 2^(m+1) - 1 }}
- *)
+(* Y = Z * 2 - 1 /\ Z = 2 ^ X *)
 
 (* ####################################################### *)
 (** * Weakest Preconditions (Advanced) *)
@@ -992,20 +960,20 @@ Definition is_wp P c Q :=
     _weakest_ (easiest to satisfy) assertion that guarantees [Q] after
     executing [c]. *)
 
-(** **** Exercise: 1 star, optional (wp) *)
+(** **** Exercise: 1 star, optional (wp)  *)
 (** What are the weakest preconditions of the following commands
    for the following postconditions?
   1) {{ X = 5 }}  SKIP  {{ X = 5 }}
 
   2) {{ Y + Z = 5 }}  X ::= Y + Z {{ X = 5 }}
 
-  3) {{ Y = Y }}  X ::= Y  {{ X = Y }}
+  3) {{ True }}  X ::= Y  {{ X = Y }}
 
-  4) {{ Z + 1 = 5 \/ W + 2 = 5 }}
+  4) {{ (X = 0 /\ Z = 4) \/ (X <> 0 /\ W = 3) }}
      IFB X == 0 THEN Y ::= Z + 1 ELSE Y ::= W + 2 FI
      {{ Y = 5 }}
 
-  5) {{ 5 = 0 }}
+  5) {{ False }}
      X ::= 5
      {{ X = 0 }}
 
@@ -1015,7 +983,7 @@ Definition is_wp P c Q :=
 *)
 (** [] *)
 
-(** **** Exercise: 3 stars, advanced, optional (is_wp_formal) *)
+(** **** Exercise: 3 stars, advanced, optional (is_wp_formal)  *)
 (** Prove formally using the definition of [hoare_triple] that [Y <= 4]
    is indeed the weakest precondition of [X ::= Y + 1] with respect to
    postcondition [X <= 5]. *)
@@ -1024,39 +992,34 @@ Theorem is_wp_example :
   is_wp (fun st => st Y <= 4)
     (X ::= APlus (AId Y) (ANum 1)) (fun st => st X <= 5).
 Proof.
-  unfold is_wp. split.
-  Case "Valid".
-    eapply hoare_consequence_pre.
-    apply hoare_asgn.
-    intros st H. unfold assn_sub. simpl.
-    rewrite update_eq. omega.
-  Case "Weakest".
-    unfold hoare_triple.
-    intros P' Hhoare st HP'.
-    apply Hhoare with (st' := update st X (st Y + 1)) in HP'.
-      rewrite update_eq in HP'. omega.
-      constructor. reflexivity.  Qed.
+  unfold is_wp. split. eapply hoare_consequence_pre.
+  apply hoare_asgn. intros st H. unfold assn_sub.
+  rewrite update_eq. simpl. omega.
+  intros. unfold hoare_triple in H.
+  unfold assert_implies. intros.
+  assert ((X ::= APlus (AId Y) (ANum 1)) / st || update st X (aeval st (APlus (AId Y) (ANum 1)))). constructor. reflexivity.
+  apply H in H1. rewrite update_eq in H1. simpl in H1. omega.
+  assumption.
+Qed.
 (** [] *)
 
-(** **** Exercise: 2 stars, advanced (hoare_asgn_weakest) *)
+(** **** Exercise: 2 stars, advanced (hoare_asgn_weakest)  *)
 (** Show that the precondition in the rule [hoare_asgn] is in fact the
     weakest precondition. *)
 
 Theorem hoare_asgn_weakest : forall Q X a,
   is_wp (Q [X |-> a]) (X ::= a) Q.
 Proof.
-  split.
-  Case "Valid".
-    apply hoare_asgn.
-  Case "Weakest".
-    unfold hoare_triple, assn_sub.
-    intros P' Hhoare st HP'.
-    apply Hhoare with (st' := update st X (aeval st a)) in HP'.
-      assumption.
-      constructor. reflexivity.  Qed.
+  unfold is_wp. unfold hoare_triple. split; intros.
+  inversion H; subst. unfold assn_sub in H0. assumption.
+  unfold assert_implies. unfold assn_sub. intros.
+  apply (H st (update st X (aeval st a))). constructor. reflexivity.
+  assumption.
+Qed.
+
 (** [] *)
 
-(** **** Exercise: 2 stars, advanced, optional (hoare_havoc_weakest) *)
+(** **** Exercise: 2 stars, advanced, optional (hoare_havoc_weakest)  *)
 (** Show that your [havoc_pre] rule from the [himp_hoare] exercise
     in the [Hoare] chapter returns the weakest precondition. *)
 Module Himp2.
@@ -1066,11 +1029,10 @@ Lemma hoare_havoc_weakest : forall (P Q : Assertion) (X : id),
   {{ P }} HAVOC X {{ Q }} ->
   P ->> havoc_pre X Q.
 Proof.
-  unfold hoare_triple, havoc_pre. intros P Q X H st HP n.
-  apply H with (st' := update st X n) in HP.
-    assumption.
-    constructor.  Qed.
-
+  unfold hoare_triple. unfold havoc_pre.
+  unfold assert_implies. intros. eapply H.
+  constructor. assumption.
+Qed.
 End Himp2.
 (** [] *)
 
@@ -1441,7 +1403,7 @@ Theorem subtract_slowly_dec_correct : forall m p,
   dec_correct (subtract_slowly_dec m p).
 Proof. intros m p. verify. (* this grinds for a bit! *) Qed.
 
-(** **** Exercise: 3 stars, advanced (slow_assignment_dec) *)
+(** **** Exercise: 3 stars, advanced (slow_assignment_dec)  *)
 
 (** In the [slow_assignment] exercise above, we saw a roundabout way
     of assigning a number currently stored in [X] to the variable [Y]:
@@ -1452,28 +1414,28 @@ Proof. intros m p. verify. (* this grinds for a bit! *) Qed.
     correct. *)
 
 Example slow_assignment_dec (m:nat) : dcom := (
-    {{ fun st => st X = m }} ->>
-    {{ fun st => 0 + st X = m }}
-  Y ::= ANum 0
-    {{ fun st => st Y + st X = m }};;
-  WHILE BNot (BLe (AId X) (ANum 0))
-  DO  {{ fun st => st Y + st X = m /\ st X <> 0 }} ->>
-      {{ fun st => (st Y + 1) + (st X - 1) = m }}
-    Y ::= APlus (AId Y) (ANum 1)
-      {{ fun st => st Y + (st X - 1) = m }};;
+      {{ fun st => st X = m }}
+    Y ::= ANum 0
+    {{ fun st => st X = m /\ st Y = 0 }} ->>
+    {{ fun st => st X + st Y = m }};;
+    WHILE BNot (BEq (AId X) (ANum 0)) DO
+    {{ fun st => st X + st Y = m /\ st X <> 0 }} ->>
+    {{ fun st => (st X - 1) + (st Y + 1) = m }}
     X ::= AMinus (AId X) (ANum 1)
-      {{ fun st => st Y + st X = m }}
-  END
-    {{ fun st => st Y + st X = m /\ st X = 0 }} ->>
+    {{ fun st => st X + (st Y + 1) = m }} ;;
+      Y ::= APlus (AId Y) (ANum 1)
+    {{ fun st => st X + st Y = m }}
+    END
+    {{ fun st => st X + st Y = m /\ st X = 0 }} ->>
     {{ fun st => st Y = m }}
 ) % dcom.
 
 Theorem slow_assignment_dec_correct : forall m,
   dec_correct (slow_assignment_dec m).
-Proof. intros. verify.  Qed.
+Proof. intros. verify. Qed.
 (** [] *)
 
-(** **** Exercise: 4 stars, advanced (factorial_dec)  *)
+(** **** Exercise: 4 stars, advanced (factorial_dec)   *)
 (** Remember the factorial function we worked with before: *)
 
 Fixpoint real_fact (n:nat) : nat :=
@@ -1483,41 +1445,37 @@ Fixpoint real_fact (n:nat) : nat :=
   end.
 
 (** Following the pattern of [subtract_slowly_dec], write a decorated
-    program that implements the factorial function and prove it
-    correct. *)
+    program [factorial_dec] that implements the factorial function and
+    prove it correct as [factorial_dec_correct]. *)
 
 Example factorial_dec (m:nat) : dcom := (
-    {{ fun st => st X = m }} ->>
-    {{ fun st => 1 * real_fact (st X) = real_fact m }}
-  Y ::= ANum 1
-    {{ fun st => st Y * real_fact (st X) = real_fact m }};;
-  WHILE BNot (BEq (AId X) (ANum 0))
-  DO   {{ fun st => st Y * real_fact (st X) = real_fact m /\ st X <> 0 }} ->>
-       {{ fun st => st Y * st X * real_fact (st X - 1) = real_fact m }}
-     Y ::= AMult (AId Y) (AId X)
-       {{ fun st => st Y * real_fact (st X - 1) = real_fact m }};;
-     X ::= AMinus (AId X) (ANum 1)
-       {{ fun st => st Y * real_fact (st X) = real_fact m }}
+  {{ fun st => st X = m }}
+    Y ::= ANum 1
+  {{ fun st => st X = m /\ st Y = 1 }} ->>
+  {{ fun st => st Y * fact (st X) = fact m }};;
+  WHILE BNot (BEq (AId X) (ANum 0)) DO
+  {{ fun st => st Y * fact (st X) = fact m /\ st X <> 0 }} ->>
+  {{ fun st => st Y * fact (st X) = fact m /\ fact (st X) = st X * fact (st X - 1) }} ->>
+  {{ fun st => st Y * st X * fact (st X - 1 ) = fact m }}
+  Y ::= AMult (AId Y) (AId X)
+  {{ fun st => st Y * fact (st X - 1) = fact m }};;
+  X ::= AMinus (AId X) (ANum 1)
+  {{ fun st => st Y * fact (st X) = fact m }}
   END
-    {{ fun st => st Y * real_fact (st X) = real_fact m /\ st X = 0 }} ->>
-    {{ fun st => st Y = real_fact m }}
+  {{ fun st => st Y * fact (st X) = fact m /\ st X = 0 }} ->>
+  {{ fun st => st Y * fact (st X) = fact m /\ fact (st X) = 1 }} ->>
+  {{ fun st => st Y = fact m }}
 ) % dcom.
 
 Theorem factorial_dec_correct : forall m,
   dec_correct (factorial_dec m).
 Proof.
-  intros. verify.
+  intros. verify. destruct (st X) eqn:eqX; simpl. omega.
+  rewrite <- minus_n_O. reflexivity. rewrite <- mult_assoc.
+  rewrite <- H0. assumption. rewrite H0 in H. omega.
+Qed.
 
-  assert (forall n, n <> 0 -> n * real_fact (n - 1) = real_fact n).
-    intros. destruct n.
-      apply ex_falso_quodlibet. apply H1. reflexivity.
-      simpl. rewrite <- minus_n_O. reflexivity.
-  rewrite <- mult_assoc.
-  rewrite H1; assumption.
-
-  simpl in H. rewrite mult_1_r in H. assumption.  Qed.
 (** [] *)
 
 
-
-(* $Date: 2013-07-17 16:19:11 -0400 (Wed, 17 Jul 2013) $ *)
+(** $Date: 2014-12-31 11:17:56 -0500 (Wed, 31 Dec 2014) $ *)
